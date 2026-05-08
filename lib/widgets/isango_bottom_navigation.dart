@@ -36,7 +36,7 @@ class IsangoBottomNavigation extends StatelessWidget {
         ),
 
         NavigationDestination(
-            icon: Icon(Icons.circle_outlined),
+            icon: Icon(Icons.add_circle_outline),
             label: "Submit"
         ),
         NavigationDestination(
