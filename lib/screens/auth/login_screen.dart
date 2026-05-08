@@ -18,6 +18,17 @@ class _LoginScreenState extends State<LoginScreen> {
   final _passwordController = TextEditingController();
   bool _obscurePassword = true;
 
+  static const _personalDomains = [
+    'gmail.com', 'yahoo.com', 'hotmail.com',
+    'outlook.com', 'icloud.com', 'live.com',
+  ];
+
+  bool _isUniversityEmail(String email) {
+    if (!email.contains('@')) return false;
+    final domain = email.split('@').last.toLowerCase();
+    return !_personalDomains.contains(domain);
+  }
+
   @override
   void dispose() {
     _emailController.dispose();
@@ -36,73 +47,111 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       backgroundColor: AppColors.mistBackground,
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const SizedBox(height: 64),
-              Center(
-                child: Container(
-                  width: 72,
-                  height: 72,
-                  decoration: BoxDecoration(
-                    color: AppColors.logisticsNavy,
-                    borderRadius: BorderRadius.circular(AppRadii.card),
+        child: Center(
+          child: SingleChildScrollView(
+            padding: const EdgeInsets.all(AppSpacing.page),
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 480),
+              decoration: BoxDecoration(
+                color: AppColors.cardWhite,
+                borderRadius: BorderRadius.circular(AppRadii.card),
+                border: Border.all(color: AppColors.softBorder),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withOpacity(0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 4),
                   ),
-                  child: const Icon(
-                    Icons.location_on_rounded,
-                    color: Colors.white,
-                    size: 36,
-                  ),
-                ),
+                ],
               ),
-              const SizedBox(height: AppSpacing.lg),
-              const Text(
-                'Welcome back',
-                style: AppTextStyles.headline,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              const Text(
-                'Sign in to your Isango account',
-                style: AppTextStyles.bodyMuted,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              Form(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              child: Form(
                 key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
+                    const SizedBox(height: AppSpacing.sm),
+                    const Text(
+                      'Isango',
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.logisticsNavy,
+                        letterSpacing: -0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    const Text(
+                      'Welcome back!',
+                      style: AppTextStyles.headline,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    const Text(
+                      'Sign in to access your personalized campus events feed.',
+                      style: AppTextStyles.bodyMuted,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: AppSpacing.lg),
+                    const Text('Email Address', style: AppTextStyles.title),
+                    const SizedBox(height: AppSpacing.xs),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       decoration: const InputDecoration(
-                        labelText: 'Email',
-                        hintText: 'you@example.com',
+                        hintText: 'student@domain',
                         prefixIcon: Icon(Icons.email_outlined),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
                           return 'Email is required';
                         }
-                        if (!value.contains('@')) return 'Enter a valid email';
+                        if (!value.contains('@')) {
+                          return 'Please enter a valid university email address';
+                        }
+                        if (!_isUniversityEmail(value)) {
+                          return 'Please enter a valid university email address';
+                        }
                         return null;
                       },
                     ),
                     const SizedBox(height: AppSpacing.md),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text('Password', style: AppTextStyles.title),
+                        TextButton(
+                          onPressed: () {},
+                          style: TextButton.styleFrom(
+                            padding: EdgeInsets.zero,
+                            minimumSize: Size.zero,
+                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                          ),
+                          child: const Text(
+                            'Forgot Password?',
+                            style: TextStyle(
+                              color: AppColors.logisticsNavy,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
                     TextFormField(
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
-                        labelText: 'Password',
                         hintText: '••••••••',
                         prefixIcon: const Icon(Icons.lock_outline),
                         suffixIcon: IconButton(
                           icon: Icon(
                             _obscurePassword
-                                ? Icons.visibility_outlined
-                                : Icons.visibility_off_outlined,
+                                ? Icons.visibility_off_outlined
+                                : Icons.visibility_outlined,
                           ),
                           onPressed: () => setState(
                             () => _obscurePassword = !_obscurePassword,
@@ -119,17 +168,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         return null;
                       },
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: TextButton(
-                        onPressed: () {},
-                        child: const Text('Forgot password?'),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.lg),
                     SizedBox(
-                      width: double.infinity,
                       height: 52,
                       child: ElevatedButton(
                         onPressed: _submit,
@@ -140,31 +180,40 @@ class _LoginScreenState extends State<LoginScreen> {
                             borderRadius: BorderRadius.circular(AppRadii.button),
                           ),
                           textStyle: AppTextStyles.body.copyWith(
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
-                        child: const Text('Log in'),
+                        child: const Text('Sign In'),
                       ),
                     ),
+                    const SizedBox(height: AppSpacing.md),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          "Don't have an account? ",
+                          style: AppTextStyles.bodyMuted,
+                        ),
+                        GestureDetector(
+                          onTap: () => Navigator.pushReplacementNamed(
+                            context, AppRoutes.signUp,
+                          ),
+                          child: const Text(
+                            'Sign Up',
+                            style: TextStyle(
+                              color: AppColors.logisticsNavy,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
                   ],
                 ),
               ),
-              const SizedBox(height: AppSpacing.xl),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  const Text(
-                    "Don't have an account?",
-                    style: AppTextStyles.bodyMuted,
-                  ),
-                  TextButton(
-                    onPressed: () =>
-                        Navigator.pushReplacementNamed(context, AppRoutes.signUp),
-                    child: const Text('Sign up'),
-                  ),
-                ],
-              ),
-            ],
+            ),
           ),
         ),
       ),
