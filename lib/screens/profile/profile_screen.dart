@@ -146,7 +146,7 @@ class ProfileScreen extends StatelessWidget {
             const SizedBox(height: AppSpacing.md),
             // Account Settings button
             OutlinedButton.icon(
-              onPressed: () {},
+              onPressed: () => Navigator.pushNamed(context, AppRoutes.settings),
               icon: const Icon(Icons.manage_accounts_outlined),
               label: const Text('Account Settings'),
               style: OutlinedButton.styleFrom(
@@ -170,8 +170,8 @@ class ProfileScreen extends StatelessWidget {
                   color: AppColors.criticalRed),
               label: const Text('Sign Out'),
               style: OutlinedButton.styleFrom(
-                foregroundColor: AppColors.criticalRed,
-                backgroundColor: const Color(0xFFFFEEEE),
+                foregroundColor: const Color(0xFF93000A),
+                backgroundColor: const Color(0xFFFFDAD6),
                 side: BorderSide.none,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadii.button),

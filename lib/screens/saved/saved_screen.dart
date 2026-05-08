@@ -21,22 +21,81 @@ class _SavedScreenState extends State<SavedScreen> {
     _SavedEvent(
       title: 'Student Tech Expo',
       organizer: 'Career Services',
-      date: 'Oct 12, 10:00 AM',
+      date: 'Oct 12',
+      time: '10:00 AM – 1:00 PM',
       location: 'Main Hall',
       status: 'RSVP Confirmed',
       hasReminder: true,
       isLive: true,
+      imageUrl: 'https://picsum.photos/seed/techexpo/400/200',
     ),
     _SavedEvent(
       title: 'Zen Wellness Session',
       organizer: 'Campus Health',
-      date: 'Oct 14, 2:00 PM',
+      date: 'Oct 14',
+      time: '2:00 PM – 4:00 PM',
       location: 'Student Lounge',
       status: 'RSVP Pending',
       hasReminder: false,
       isLive: false,
+      imageUrl: 'https://picsum.photos/seed/zenwell/400/200',
+    ),
+    _SavedEvent(
+      title: 'African Cultural Night 2024',
+      organizer: 'Cultural Committee',
+      date: 'Oct 21',
+      time: '6:00 PM – 10:00 PM',
+      location: 'Main Auditorium',
+      status: 'Saved',
+      hasReminder: true,
+      isLive: false,
+      imageUrl: 'https://picsum.photos/seed/culture/400/200',
+    ),
+    _SavedEvent(
+      title: 'Hackathon: Build for Rwanda',
+      organizer: 'CS Club',
+      date: 'Oct 24',
+      time: '8:00 AM – 8:00 PM',
+      location: 'ICT Lab, Block C',
+      status: 'RSVP Confirmed',
+      hasReminder: true,
+      isLive: false,
+      imageUrl: 'https://picsum.photos/seed/hackathon/400/200',
+    ),
+    _SavedEvent(
+      title: 'Mental Health Awareness Talk',
+      organizer: 'Counseling Center',
+      date: 'Oct 23',
+      time: '10:00 AM – 12:00 PM',
+      location: 'Conference Room B',
+      status: 'Saved',
+      hasReminder: false,
+      isLive: false,
+      imageUrl: 'https://picsum.photos/seed/mentalhealth/400/200',
     ),
   ];
+
+  List<_SavedEvent> get _filteredEvents {
+    switch (_selectedFilter) {
+      case 1: // RSVPs
+        return _events.where((e) => e.status.contains('RSVP')).toList();
+      case 2: // Reminders
+        return _events.where((e) => e.hasReminder).toList();
+      default: // All Saved
+        return _events;
+    }
+  }
+
+  String get _emptyMessage {
+    switch (_selectedFilter) {
+      case 1:
+        return 'No RSVPs yet. Register for events to see them here.';
+      case 2:
+        return 'No reminders set. Open an event and tap Set Reminder.';
+      default:
+        return 'Your saved list is empty. Explore upcoming events to get started.';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -46,12 +105,46 @@ class _SavedScreenState extends State<SavedScreen> {
         title: const Text('Saved Events'),
         leading: IconButton(
           icon: const Icon(Icons.menu),
-          onPressed: () {},
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.more_vert),
-            onPressed: () {},
+            onPressed: () => showModalBottomSheet(
+              context: context,
+              builder: (ctx) => SafeArea(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    ListTile(
+                      leading: const Icon(Icons.sort_outlined),
+                      title: const Text('Sort by Date'),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Sorted by date')),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.filter_list_outlined),
+                      title: const Text('Filter by Campus'),
+                      onTap: () {
+                        Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Filter applied')),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      leading: const Icon(Icons.delete_outline, color: Colors.red),
+                      title: const Text('Clear All Saved', style: TextStyle(color: Colors.red)),
+                      onTap: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -108,8 +201,9 @@ class _SavedScreenState extends State<SavedScreen> {
           ),
           const SizedBox(height: AppSpacing.md),
           Expanded(
-            child: _events.isEmpty
+            child: _filteredEvents.isEmpty
                 ? _EmptyState(
+                    message: _emptyMessage,
                     onExplore: () =>
                         Navigator.pushReplacementNamed(context, AppRoutes.home),
                   )
@@ -117,11 +211,13 @@ class _SavedScreenState extends State<SavedScreen> {
                     padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.page,
                     ),
-                    itemCount: _events.length,
+                    itemCount: _filteredEvents.length,
                     separatorBuilder: (_, _) =>
                         const SizedBox(height: AppSpacing.sm),
-                    itemBuilder: (context, i) =>
-                        _EventCard(event: _events[i]),
+                    itemBuilder: (context, i) => _EventCard(
+                      event: _filteredEvents[i],
+                      onTap: () => Navigator.pushNamed(context, AppRoutes.eventDetail),
+                    ),
                   ),
           ),
         ],
@@ -135,24 +231,29 @@ class _SavedEvent {
     required this.title,
     required this.organizer,
     required this.date,
+    required this.time,
     required this.location,
     required this.status,
     required this.hasReminder,
     required this.isLive,
+    required this.imageUrl,
   });
 
   final String title;
   final String organizer;
   final String date;
+  final String time;
   final String location;
   final String status;
   final bool hasReminder;
   final bool isLive;
+  final String imageUrl;
 }
 
 class _EventCard extends StatefulWidget {
-  const _EventCard({required this.event});
+  const _EventCard({required this.event, required this.onTap});
   final _SavedEvent event;
+  final VoidCallback onTap;
 
   @override
   State<_EventCard> createState() => _EventCardState();
@@ -163,30 +264,37 @@ class _EventCardState extends State<_EventCard> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return GestureDetector(
+      onTap: widget.onTap,
+      child: Container(
       decoration: BoxDecoration(
         color: AppColors.cardWhite,
         borderRadius: BorderRadius.circular(AppRadii.card),
         border: Border.all(color: AppColors.softBorder),
       ),
+      clipBehavior: Clip.hardEdge,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Stack(
             children: [
-              Container(
+              SizedBox(
                 height: 140,
-                decoration: BoxDecoration(
-                  color: AppColors.paleSignalBlue,
-                  borderRadius: const BorderRadius.vertical(
-                    top: Radius.circular(AppRadii.card),
-                  ),
-                ),
-                child: Center(
-                  child: Icon(
-                    Icons.event,
-                    size: 48,
-                    color: AppColors.logisticsNavy.withValues(alpha: 0.3),
+                width: double.infinity,
+                child: Image.network(
+                  widget.event.imageUrl,
+                  fit: BoxFit.cover,
+                  loadingBuilder: (context, child, progress) => progress == null
+                      ? child
+                      : Container(
+                          color: AppColors.paleSignalBlue,
+                          child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                        ),
+                  errorBuilder: (context, error, stack) => Container(
+                    color: AppColors.paleSignalBlue,
+                    child: Center(
+                      child: Icon(Icons.event, size: 48, color: AppColors.logisticsNavy.withValues(alpha: 0.3)),
+                    ),
                   ),
                 ),
               ),
@@ -261,7 +369,20 @@ class _EventCardState extends State<_EventCard> {
                         size: 14, color: AppColors.mutedOperationalInk),
                     const SizedBox(width: 4),
                     Text(widget.event.date, style: AppTextStyles.bodyMuted),
-                    const SizedBox(width: AppSpacing.sm),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
+                    const Icon(Icons.access_time_outlined,
+                        size: 14, color: AppColors.mutedOperationalInk),
+                    const SizedBox(width: 4),
+                    Text(widget.event.time, style: AppTextStyles.bodyMuted),
+                  ],
+                ),
+                const SizedBox(height: 2),
+                Row(
+                  children: [
                     const Icon(Icons.location_on_outlined,
                         size: 14, color: AppColors.mutedOperationalInk),
                     const SizedBox(width: 4),
@@ -323,13 +444,15 @@ class _EventCardState extends State<_EventCard> {
           ),
         ],
       ),
+    ),
     );
   }
 }
 
 class _EmptyState extends StatelessWidget {
-  const _EmptyState({required this.onExplore});
+  const _EmptyState({required this.onExplore, required this.message});
   final VoidCallback onExplore;
+  final String message;
 
   @override
   Widget build(BuildContext context) {
@@ -353,10 +476,10 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.md),
-            const Text('No saved events', style: AppTextStyles.headline),
+            const Text('Nothing here yet', style: AppTextStyles.headline),
             const SizedBox(height: AppSpacing.xs),
-            const Text(
-              'Your saved list is empty. Explore upcoming events on campus to get started.',
+            Text(
+              message,
               style: AppTextStyles.bodyMuted,
               textAlign: TextAlign.center,
             ),

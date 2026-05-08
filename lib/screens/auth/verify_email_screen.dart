@@ -105,7 +105,12 @@ class VerifyEmailScreen extends StatelessWidget {
               SizedBox(
                 height: 52,
                 child: ElevatedButton.icon(
-                  onPressed: () {},
+                  onPressed: () => ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Verification email resent! Check your inbox.'),
+                      duration: Duration(seconds: 3),
+                    ),
+                  ),
                   icon: const Icon(Icons.send_outlined, size: 18),
                   label: const Text('Resend Verification Email'),
                   style: ElevatedButton.styleFrom(

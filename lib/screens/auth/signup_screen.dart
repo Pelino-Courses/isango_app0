@@ -82,7 +82,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
                       decoration: const InputDecoration(
-                        hintText: 'Tresor Ndungutse',
+                        hintText: 'Full names',
                         prefixIcon: Icon(Icons.person_outline),
                       ),
                       validator: (value) {

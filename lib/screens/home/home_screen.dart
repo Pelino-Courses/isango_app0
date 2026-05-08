@@ -17,26 +17,109 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedCategory = 0;
   final _categories = ['Academic', 'Career', 'Sports', 'Cultural', 'Tech', 'Health'];
 
-  final _events = [
+  final _allEvents = [
     _Event(
       title: 'Student Union Leadership Summit 2024',
       organizer: 'Student Union',
       date: 'Oct 15, 10:00 AM',
       location: 'Student Center',
+      imageUrl: 'https://picsum.photos/seed/leadership/400/200',
+      category: 'Academic',
+    ),
+    _Event(
+      title: 'End-of-Semester Research Showcase',
+      organizer: 'Faculty of Science',
+      date: 'Oct 22, 2:00 PM',
+      location: 'Library Hall',
+      imageUrl: 'https://picsum.photos/seed/research/400/200',
+      category: 'Academic',
     ),
     _Event(
       title: 'Fall Semester Career & Internship Fair',
       organizer: 'Career Services',
       date: 'Oct 18, 9:00 AM',
       location: 'Athletic Complex',
+      imageUrl: 'https://picsum.photos/seed/career/400/200',
+      category: 'Career',
+    ),
+    _Event(
+      title: 'CV & Interview Workshop',
+      organizer: 'Career Services',
+      date: 'Oct 25, 11:00 AM',
+      location: 'Room 204, Main Block',
+      imageUrl: 'https://picsum.photos/seed/workshop/400/200',
+      category: 'Career',
+    ),
+    _Event(
+      title: 'Inter-Faculty Football Tournament',
+      organizer: 'Sports Association',
+      date: 'Oct 19, 8:00 AM',
+      location: 'University Stadium',
+      imageUrl: 'https://picsum.photos/seed/football/400/200',
+      category: 'Sports',
+    ),
+    _Event(
+      title: 'Annual Cross-Country Run',
+      organizer: 'Athletics Club',
+      date: 'Oct 26, 7:00 AM',
+      location: 'Campus Track',
+      imageUrl: 'https://picsum.photos/seed/athletics/400/200',
+      category: 'Sports',
+    ),
+    _Event(
+      title: 'African Cultural Night 2024',
+      organizer: 'Cultural Committee',
+      date: 'Oct 21, 6:00 PM',
+      location: 'Main Auditorium',
+      imageUrl: 'https://picsum.photos/seed/culture/400/200',
+      category: 'Cultural',
+    ),
+    _Event(
+      title: 'Poetry & Spoken Word Open Mic',
+      organizer: 'Arts Club',
+      date: 'Oct 28, 5:00 PM',
+      location: 'Student Lounge',
+      imageUrl: 'https://picsum.photos/seed/poetry/400/200',
+      category: 'Cultural',
+    ),
+    _Event(
+      title: 'Annual Tech Symposium',
+      organizer: 'Tech Hub UR',
+      date: 'Oct 17, 2:00 PM',
+      location: 'Main Hall, North Campus',
+      imageUrl: 'https://picsum.photos/seed/techsym/400/200',
+      category: 'Tech',
+    ),
+    _Event(
+      title: 'Hackathon: Build for Rwanda',
+      organizer: 'Computer Science Club',
+      date: 'Oct 24, 8:00 AM',
+      location: 'ICT Lab, Block C',
+      imageUrl: 'https://picsum.photos/seed/hackathon/400/200',
+      category: 'Tech',
     ),
     _Event(
       title: 'Campus Health & Wellness Week',
       organizer: 'Campus Health',
       date: 'Oct 20, 8:00 AM',
       location: 'North Quad Lawn',
+      imageUrl: 'https://picsum.photos/seed/wellness/400/200',
+      category: 'Health',
+    ),
+    _Event(
+      title: 'Mental Health Awareness Talk',
+      organizer: 'Counseling Center',
+      date: 'Oct 23, 10:00 AM',
+      location: 'Conference Room B',
+      imageUrl: 'https://picsum.photos/seed/mentalhealth/400/200',
+      category: 'Health',
     ),
   ];
+
+  List<_Event> get _filteredEvents {
+    final cat = _categories[_selectedCategory];
+    return _allEvents.where((e) => e.category == cat).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -53,12 +136,15 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         leading: IconButton(
           icon: const Icon(Icons.menu, color: AppColors.logisticsNavy),
-          onPressed: () {},
+          onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
         ),
         actions: [
           IconButton(
             icon: const Icon(Icons.search, color: AppColors.logisticsNavy),
-            onPressed: () {},
+            onPressed: () => showSearch(
+              context: context,
+              delegate: _EventSearchDelegate(),
+            ),
           ),
         ],
       ),
@@ -70,7 +156,9 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.fromLTRB(
               AppSpacing.page, AppSpacing.sm, AppSpacing.page, 0,
             ),
-            child: _FeaturedCard(),
+            child: _FeaturedCard(
+              onRegister: () => Navigator.pushNamed(context, AppRoutes.eventDetail),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
           // Category chips
@@ -134,17 +222,42 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           const SizedBox(height: AppSpacing.sm),
           // Event list
-          ListView.separated(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
-            itemCount: _events.length,
-            separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
-            itemBuilder: (context, i) => _EventCard(
-              event: _events[i],
-              onTap: () =>
-                  Navigator.pushNamed(context, AppRoutes.eventDetail),
-            ),
+          Builder(
+            builder: (context) {
+              final events = _filteredEvents;
+              if (events.isEmpty) {
+                return Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.page,
+                    vertical: AppSpacing.xl,
+                  ),
+                  child: Column(
+                    children: [
+                      Icon(Icons.event_busy_outlined,
+                          size: 48,
+                          color: AppColors.mutedOperationalInk.withValues(alpha: 0.5)),
+                      const SizedBox(height: AppSpacing.sm),
+                      Text(
+                        'No ${_categories[_selectedCategory]} events right now',
+                        style: AppTextStyles.bodyMuted,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                );
+              }
+              return ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.page),
+                itemCount: events.length,
+                separatorBuilder: (_, _) => const SizedBox(height: AppSpacing.sm),
+                itemBuilder: (context, i) => _EventCard(
+                  event: events[i],
+                  onTap: () => Navigator.pushNamed(context, AppRoutes.eventDetail),
+                ),
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.xl),
         ],
@@ -154,6 +267,9 @@ class _HomeScreenState extends State<HomeScreen> {
 }
 
 class _FeaturedCard extends StatefulWidget {
+  const _FeaturedCard({required this.onRegister});
+  final VoidCallback onRegister;
+
   @override
   State<_FeaturedCard> createState() => _FeaturedCardState();
 }
@@ -258,7 +374,7 @@ class _FeaturedCardState extends State<_FeaturedCard> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              onPressed: () {},
+              onPressed: widget.onRegister,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.safetyOrange,
                 foregroundColor: Colors.white,
@@ -293,12 +409,16 @@ class _Event {
     required this.organizer,
     required this.date,
     required this.location,
+    required this.imageUrl,
+    required this.category,
   });
 
   final String title;
   final String organizer;
   final String date;
   final String location;
+  final String imageUrl;
+  final String category;
 }
 
 class _EventCard extends StatefulWidget {
@@ -329,14 +449,23 @@ class _EventCardState extends State<_EventCard> {
           children: [
             Stack(
               children: [
-                Container(
+                SizedBox(
                   height: 160,
-                  color: AppColors.paleSignalBlue,
-                  child: Center(
-                    child: Icon(
-                      Icons.event,
-                      size: 56,
-                      color: AppColors.logisticsNavy.withValues(alpha: 0.25),
+                  width: double.infinity,
+                  child: Image.network(
+                    widget.event.imageUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, progress) => progress == null
+                        ? child
+                        : Container(
+                            color: AppColors.paleSignalBlue,
+                            child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                          ),
+                    errorBuilder: (context, error, stack) => Container(
+                      color: AppColors.paleSignalBlue,
+                      child: Center(
+                        child: Icon(Icons.event, size: 56, color: AppColors.logisticsNavy.withValues(alpha: 0.25)),
+                      ),
                     ),
                   ),
                 ),
@@ -412,6 +541,75 @@ class _EventCardState extends State<_EventCard> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _EventSearchDelegate extends SearchDelegate<String> {
+  final _suggestions = const [
+    'Career Fair',
+    'Tech Symposium',
+    'Leadership Summit',
+    'Wellness Week',
+    'Cultural Night',
+    'Sports Gala',
+  ];
+
+  @override
+  String get searchFieldLabel => 'Search events...';
+
+  @override
+  List<Widget> buildActions(BuildContext context) => [
+        IconButton(
+          icon: const Icon(Icons.clear),
+          onPressed: () => query = '',
+        ),
+      ];
+
+  @override
+  Widget buildLeading(BuildContext context) => IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () => close(context, ''),
+      );
+
+  @override
+  Widget buildResults(BuildContext context) {
+    final results = _suggestions
+        .where((s) => s.toLowerCase().contains(query.toLowerCase()))
+        .toList();
+    if (results.isEmpty) {
+      return const Center(child: Text('No events found.'));
+    }
+    return ListView.builder(
+      itemCount: results.length,
+      itemBuilder: (context, i) => ListTile(
+        leading: const Icon(Icons.event_outlined),
+        title: Text(results[i]),
+        onTap: () {
+          close(context, results[i]);
+          Navigator.pushNamed(context, AppRoutes.eventDetail);
+        },
+      ),
+    );
+  }
+
+  @override
+  Widget buildSuggestions(BuildContext context) {
+    final filtered = query.isEmpty
+        ? _suggestions
+        : _suggestions
+            .where((s) => s.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+    return ListView.builder(
+      itemCount: filtered.length,
+      itemBuilder: (context, i) => ListTile(
+        leading: const Icon(Icons.search, size: 18),
+        title: Text(filtered[i]),
+        onTap: () {
+          query = filtered[i];
+          showResults(context);
+        },
       ),
     );
   }

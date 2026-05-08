@@ -22,6 +22,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
   String _campus = 'North Campus';
   DateTime? _date;
   TimeOfDay? _time;
+  String? _pickedImageName;
 
   final _categories = ['Academic', 'Sports', 'Cultural', 'Tech', 'Health', 'Social'];
   final _campuses = ['North Campus', 'Main Campus', 'South Campus'];
@@ -32,6 +33,17 @@ class _SubmitScreenState extends State<SubmitScreen> {
     _venueController.dispose();
     _descController.dispose();
     super.dispose();
+  }
+
+  void _pickImage() {
+    // Simulated pick — replace with real image_picker once Developer Mode is enabled
+    setState(() => _pickedImageName = 'event_image.jpg');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Enable Windows Developer Mode to activate the real image picker.'),
+        duration: Duration(seconds: 4),
+      ),
+    );
   }
 
   Future<void> _pickDate() async {
@@ -104,35 +116,78 @@ class _SubmitScreenState extends State<SubmitScreen> {
               const SizedBox(height: AppSpacing.md),
               // Image upload
               GestureDetector(
-                onTap: () {},
+                onTap: _pickImage,
                 child: Container(
-                  height: 120,
+                  height: 150,
                   decoration: BoxDecoration(
                     color: AppColors.cardWhite,
                     borderRadius: BorderRadius.circular(AppRadii.card),
                     border: Border.all(
-                      color: AppColors.mutedOperationalInk.withValues(alpha: 0.4),
-                      style: BorderStyle.solid,
+                      color: _pickedImageName != null
+                          ? AppColors.logisticsNavy
+                          : AppColors.mutedOperationalInk.withValues(alpha: 0.4),
                       width: 1.5,
                     ),
                   ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: const [
-                      Icon(Icons.add_photo_alternate_outlined,
-                          size: 32, color: AppColors.mutedOperationalInk),
-                      SizedBox(height: AppSpacing.xs),
-                      Text(
-                        'Add Image',
-                        style: TextStyle(
-                          color: AppColors.logisticsNavy,
-                          fontWeight: FontWeight.w600,
-                          fontSize: 14,
+                  clipBehavior: Clip.hardEdge,
+                  child: _pickedImageName != null
+                      ? Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Container(
+                              color: AppColors.paleSignalBlue,
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  const Icon(Icons.image_outlined,
+                                      size: 40, color: AppColors.logisticsNavy),
+                                  const SizedBox(height: AppSpacing.xs),
+                                  Text(
+                                    _pickedImageName!,
+                                    style: const TextStyle(
+                                      color: AppColors.logisticsNavy,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Positioned(
+                              top: AppSpacing.xs,
+                              right: AppSpacing.xs,
+                              child: GestureDetector(
+                                onTap: () => setState(() => _pickedImageName = null),
+                                child: Container(
+                                  padding: const EdgeInsets.all(4),
+                                  decoration: const BoxDecoration(
+                                    color: Colors.black54,
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(Icons.close,
+                                      size: 16, color: Colors.white),
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: const [
+                            Icon(Icons.add_photo_alternate_outlined,
+                                size: 36, color: AppColors.mutedOperationalInk),
+                            SizedBox(height: AppSpacing.xs),
+                            Text(
+                              'Add Image',
+                              style: TextStyle(
+                                color: AppColors.logisticsNavy,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                              ),
+                            ),
+                            Text('PNG, JPG up to 5MB',
+                                style: AppTextStyles.bodyMuted),
+                          ],
                         ),
-                      ),
-                      Text('PNG, JPG up to 5MB', style: AppTextStyles.bodyMuted),
-                    ],
-                  ),
                 ),
               ),
               const SizedBox(height: AppSpacing.md),
@@ -150,7 +205,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
               // Category
               _FieldLabel('Category'),
               DropdownButtonFormField<String>(
-                value: _category,
+                initialValue: _category,
                 decoration: const InputDecoration(),
                 items: _categories
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))
@@ -161,7 +216,7 @@ class _SubmitScreenState extends State<SubmitScreen> {
               // Campus
               _FieldLabel('Campus'),
               DropdownButtonFormField<String>(
-                value: _campus,
+                initialValue: _campus,
                 decoration: const InputDecoration(),
                 items: _campuses
                     .map((c) => DropdownMenuItem(value: c, child: Text(c)))

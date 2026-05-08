@@ -17,6 +17,120 @@ class _SettingsScreenState extends State<SettingsScreen> {
   bool _rsvpAutoCalendar = true;
   bool _compactMode = false;
   bool _dataSaving = false;
+  String _campus = 'Main Campus';
+  String _reminderTiming = '30m before';
+  final List<String> _interests = ['Tech', 'Design'];
+  final _allInterests = const ['Tech', 'Design', 'Sports', 'Culture', 'Health', 'Academic', 'Career', 'Social'];
+
+  void _pickCampus() {
+    final campuses = ['Main Campus', 'North Campus', 'South Campus', 'Kigali Campus'];
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Preferred Campus'),
+        children: campuses
+            .map((c) => ListTile(
+                  title: Text(c),
+                  trailing: _campus == c ? const Icon(Icons.check, color: AppColors.logisticsNavy) : null,
+                  onTap: () {
+                    setState(() => _campus = c);
+                    Navigator.pop(ctx);
+                  },
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  void _pickReminderTiming() {
+    final timings = ['15m before', '30m before', '1h before', '1 day before'];
+    showDialog(
+      context: context,
+      builder: (ctx) => SimpleDialog(
+        title: const Text('Reminder Timing'),
+        children: timings
+            .map((t) => ListTile(
+                  title: Text(t),
+                  trailing: _reminderTiming == t ? const Icon(Icons.check, color: AppColors.logisticsNavy) : null,
+                  onTap: () {
+                    setState(() => _reminderTiming = t);
+                    Navigator.pop(ctx);
+                  },
+                ))
+            .toList(),
+      ),
+    );
+  }
+
+  void _pickInterests() {
+    showModalBottomSheet(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setSheetState) => SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Event Interests',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 4),
+                const Text('Tap to add or remove interests',
+                    style: TextStyle(fontSize: 13, color: Colors.grey)),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: _allInterests.map((interest) {
+                    final selected = _interests.contains(interest);
+                    return FilterChip(
+                      label: Text(interest),
+                      selected: selected,
+                      onSelected: (on) {
+                        setSheetState(() {
+                          setState(() {
+                            if (on) {
+                              _interests.add(interest);
+                            } else {
+                              _interests.remove(interest);
+                            }
+                          });
+                        });
+                      },
+                      selectedColor: AppColors.paleSignalBlue,
+                      checkmarkColor: AppColors.logisticsNavy,
+                      labelStyle: TextStyle(
+                        color: selected
+                            ? AppColors.logisticsNavy
+                            : AppColors.mutedOperationalInk,
+                        fontWeight: selected ? FontWeight.w600 : FontWeight.w400,
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 16),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () => Navigator.pop(ctx),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.logisticsNavy,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.button),
+                      ),
+                    ),
+                    child: const Text('Done'),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,6 +142,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
           padding: EdgeInsets.only(left: AppSpacing.md),
           child: Icon(Icons.settings_outlined, color: AppColors.logisticsNavy),
         ),
+        actions: [
+          IconButton(
+            icon: const CircleAvatar(
+              radius: 16,
+              backgroundColor: AppColors.paleSignalBlue,
+              child: Icon(Icons.person, size: 18, color: AppColors.logisticsNavy),
+            ),
+            onPressed: () => Navigator.pushNamed(context, AppRoutes.profile),
+          ),
+        ],
       ),
       bottomNavigationBar: const IsangoBottomNavigation(currentIndex: 3),
       body: ListView(
@@ -38,8 +162,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               _NavTile(
                 title: 'Preferred Campus',
-                subtitle: 'Main Campus',
-                onTap: () {},
+                subtitle: _campus,
+                onTap: _pickCampus,
               ),
               const Divider(height: 1, color: AppColors.softBorder),
               _NavTile(
@@ -47,13 +171,54 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 subtitle: '',
                 trailing: Wrap(
                   spacing: 4,
-                  children: const [
-                    _InterestChip('Tech'),
-                    _InterestChip('Design'),
-                    _AddChip(),
+                  runSpacing: 4,
+                  children: [
+                    ..._interests.map((i) => GestureDetector(
+                          onTap: () => setState(() => _interests.remove(i)),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.paleSignalBlue,
+                              borderRadius:
+                                  BorderRadius.circular(AppRadii.chip),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(i,
+                                    style: const TextStyle(
+                                        fontSize: 12,
+                                        color: AppColors.logisticsNavy,
+                                        fontWeight: FontWeight.w500)),
+                                const SizedBox(width: 4),
+                                const Icon(Icons.close,
+                                    size: 12,
+                                    color: AppColors.logisticsNavy),
+                              ],
+                            ),
+                          ),
+                        )),
+                    GestureDetector(
+                      onTap: _pickInterests,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: AppColors.cardWhite,
+                          borderRadius: BorderRadius.circular(AppRadii.chip),
+                          border: Border.all(color: AppColors.softBorder),
+                        ),
+                        child: const Text('+ Add',
+                            style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.mutedOperationalInk,
+                                fontWeight: FontWeight.w500)),
+                      ),
+                    ),
                   ],
                 ),
-                onTap: () {},
+                onTap: _pickInterests,
               ),
             ],
           ),
@@ -63,8 +228,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             children: [
               _NavTile(
                 title: 'Reminder Timing',
-                subtitle: '30m before',
-                onTap: () {},
+                subtitle: _reminderTiming,
+                onTap: _pickReminderTiming,
               ),
               const Divider(height: 1, color: AppColors.softBorder),
               _ToggleTile(
@@ -109,7 +274,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 title: 'Support & Feedback',
                 subtitle: '',
                 trailingIcon: Icons.open_in_new_outlined,
-                onTap: () {},
+                onTap: () => ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Opening support page...')),
+                ),
               ),
             ],
           ),
@@ -243,50 +410,3 @@ class _ToggleTile extends StatelessWidget {
   }
 }
 
-class _InterestChip extends StatelessWidget {
-  const _InterestChip(this.label);
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.paleSignalBlue,
-        borderRadius: BorderRadius.circular(AppRadii.chip),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          color: AppColors.logisticsNavy,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}
-
-class _AddChip extends StatelessWidget {
-  const _AddChip();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.cardWhite,
-        borderRadius: BorderRadius.circular(AppRadii.chip),
-        border: Border.all(color: AppColors.softBorder),
-      ),
-      child: const Text(
-        '+ Add',
-        style: TextStyle(
-          fontSize: 12,
-          color: AppColors.mutedOperationalInk,
-          fontWeight: FontWeight.w500,
-        ),
-      ),
-    );
-  }
-}

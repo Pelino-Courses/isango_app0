@@ -58,7 +58,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 border: Border.all(color: AppColors.softBorder),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.06),
+                    color: Colors.black.withValues(alpha: 0.06),
                     blurRadius: 16,
                     offset: const Offset(0, 4),
                   ),
@@ -123,7 +123,32 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         const Text('Password', style: AppTextStyles.title),
                         TextButton(
-                          onPressed: () {},
+                          onPressed: () => showDialog(
+                            context: context,
+                            builder: (ctx) => AlertDialog(
+                              title: const Text('Reset Password'),
+                              content: const Text(
+                                'Enter your university email and we\'ll send you a reset link.',
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.pop(ctx),
+                                  child: const Text('Cancel'),
+                                ),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(ctx);
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Password reset link sent to your email.'),
+                                      ),
+                                    );
+                                  },
+                                  child: const Text('Send Link'),
+                                ),
+                              ],
+                            ),
+                          ),
                           style: TextButton.styleFrom(
                             padding: EdgeInsets.zero,
                             minimumSize: Size.zero,
