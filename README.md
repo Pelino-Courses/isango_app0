@@ -6,7 +6,9 @@ Isango is a Flutter application for campus event discovery and submission in the
 
 - Material 3 app shell with Isango branding
 - Shared theme tokens for color, spacing, radii, and typography
-- Named routes for the first navigation flow
+- Named routes for the full navigation flow including auth
+- Login screen with email/password validation and password visibility toggle
+- Sign-up screen with full name, email, phone, and confirmed password fields
 - Bottom navigation for `Home`, `Saved`, `Submit`, and `Settings`
 - Placeholder screens that keep feature delivery moving while the real UI is implemented incrementally
 
@@ -19,6 +21,7 @@ lib/
     constants/
     theme/
   screens/
+    auth/
     home/
     saved/
     settings/
@@ -36,5 +39,6 @@ lib/
 ## Next Steps
 
 - Replace placeholder screens with production event discovery flows
-- Add authentication and role-aware navigation
+- Connect authentication to a real backend (API + token storage)
+- Add role-aware navigation (student vs. organiser views)
 - Introduce real event data, persistence, and submission validation
